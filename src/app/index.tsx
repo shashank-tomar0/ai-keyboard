@@ -10,11 +10,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { saveApiKey, getApiKey, runAIFeature, AIFeature } from '../utils/groq';
 
-const FEATURES: AIFeature[] = ['Grammar', 'Tone', 'Reply', 'Paraphrase', 'Summarize', 'Enhance'];
+const FEATURES: { id: AIFeature; color: string; icon: string; title: string; subtitle: string }[] = [
+  { id: 'Grammar', color: '#D6F287', icon: '📝', title: 'Grammar', subtitle: 'Fix errors' }, // light green
+  { id: 'Tone', color: '#8168FF', icon: '👔', title: 'Tone', subtitle: 'Make professional' }, // purple
+  { id: 'Reply', color: '#F87060', icon: '💬', title: 'Reply', subtitle: 'Smart response' }, // coral/red
+  { id: 'Paraphrase', color: '#4E9AF1', icon: '🔄', title: 'Rewrite', subtitle: 'Change phrasing' }, // blue
+];
 
 export default function AppSettings() {
   const [apiKey, setApiKeyValue] = useState('');
@@ -79,89 +85,104 @@ export default function AppSettings() {
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>AI Keyboard</Text>
-            <Text style={styles.subtitle}>Supercharge your typing with Groq AI</Text>
+          {/* Top Bar */}
+          <View style={styles.topBar}>
+            <View style={styles.logoContainer}>
+              <Text style={styles.logoIcon}>⚙️</Text>
+              <Text style={styles.logoText}>AI Keyboard</Text>
+            </View>
+            <View style={styles.topRightIcons}>
+              <View style={styles.avatarPlaceholder} />
+              <View style={styles.bellIcon}><Text style={styles.bellText}>🔔</Text></View>
+            </View>
           </View>
 
-          {/* API Key Section */}
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Configuration</Text>
-            <Text style={styles.label}>Groq API Key</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="gsk_..."
-              placeholderTextColor="#64748B"
-              value={apiKey}
-              onChangeText={setApiKeyValue}
-              secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            <TouchableOpacity 
-              style={[styles.button, styles.primaryButton]} 
-              onPress={handleSaveKey}
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <Text style={styles.buttonText}>Save API Key</Text>
-              )}
-            </TouchableOpacity>
+          {/* Header Title */}
+          <Text style={styles.mainTitle}>Keyboard{'\n'}Settings</Text>
+
+          {/* Configuration Bento Box (Yellow) */}
+          <View style={[styles.bentoBox, { backgroundColor: '#FDE17A' }]}>
+            <View style={styles.bentoHeaderRow}>
+              <Text style={styles.bentoCategory}>Configuration</Text>
+              <Text style={styles.bentoTime}>API Setup</Text>
+            </View>
+            <Text style={styles.bentoTitle}>Groq API Key</Text>
+            <View style={styles.apiInputRow}>
+              <TextInput
+                style={styles.apiInput}
+                placeholder="gsk_..."
+                placeholderTextColor="#A18E3F"
+                value={apiKey}
+                onChangeText={setApiKeyValue}
+                secureTextEntry
+                autoCapitalize="none"
+              />
+            </View>
+            <View style={styles.bentoFooterRow}>
+              <Text style={styles.bentoFooterText}>Required for AI features</Text>
+              <TouchableOpacity 
+                style={styles.saveButton} 
+                onPress={handleSaveKey}
+                disabled={isSaving}
+              >
+                {isSaving ? <ActivityIndicator color="#000" size="small" /> : <Text style={styles.saveButtonText}>Save Key</Text>}
+              </TouchableOpacity>
+            </View>
           </View>
 
-          {/* Sandbox Section */}
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Playground</Text>
-            <Text style={styles.description}>Test the AI features before they go to your keyboard.</Text>
-            
+          {/* Playground Header */}
+          <View style={styles.playgroundHeader}>
+            <Text style={styles.playgroundTitle}>AI Playground</Text>
+            <Text style={styles.playgroundSubtitle}>Test the features before they go live on your keyboard.</Text>
+          </View>
+
+          {/* Input Box (Dark) */}
+          <View style={[styles.bentoBox, { backgroundColor: '#2C2C2E' }]}>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={styles.textArea}
               placeholder="Type something to test..."
-              placeholderTextColor="#64748B"
+              placeholderTextColor="#8E8E93"
               value={inputText}
               onChangeText={setInputText}
               multiline
               textAlignVertical="top"
             />
-
-            <View style={styles.featuresGrid}>
-              {FEATURES.map((feature) => (
-                <TouchableOpacity
-                  key={feature}
-                  style={[
-                    styles.featureButton,
-                    activeFeature === feature && styles.featureButtonActive
-                  ]}
-                  onPress={() => handleTestFeature(feature)}
-                  disabled={isLoading}
-                >
-                  <Text style={[
-                    styles.featureText,
-                    activeFeature === feature && styles.featureTextActive
-                  ]}>
-                    {feature}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Output Section */}
-            {(outputText || isLoading) ? (
-              <View style={styles.outputContainer}>
-                {isLoading ? (
-                  <ActivityIndicator color="#38BDF8" style={styles.loader} />
-                ) : (
-                  <>
-                    <Text style={styles.outputLabel}>AI Response:</Text>
-                    <Text style={styles.outputText}>{outputText}</Text>
-                  </>
-                )}
-              </View>
-            ) : null}
           </View>
+
+          {/* Features Bento Grid */}
+          <View style={styles.featuresGrid}>
+            {FEATURES.map((feature, index) => (
+              <TouchableOpacity
+                key={feature.id}
+                style={[
+                  styles.featureBentoBox,
+                  { backgroundColor: feature.color },
+                  index % 2 === 0 ? styles.featureBoxLeft : styles.featureBoxRight,
+                  activeFeature === feature.id && styles.featureActive
+                ]}
+                onPress={() => handleTestFeature(feature.id)}
+                disabled={isLoading}
+              >
+                <Text style={styles.featureIcon}>{feature.icon}</Text>
+                <Text style={styles.featureBoxTitle}>{feature.title}</Text>
+                <Text style={styles.featureBoxSubtitle}>{feature.subtitle}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Output Section (Purple Bento) */}
+          {(outputText || isLoading) ? (
+            <View style={[styles.bentoBox, { backgroundColor: '#8168FF', marginTop: 16 }]}>
+              <View style={styles.bentoHeaderRow}>
+                <Text style={[styles.bentoCategory, { color: '#FFF' }]}>AI Response</Text>
+              </View>
+              {isLoading ? (
+                <ActivityIndicator color="#FFF" style={styles.loader} size="large" />
+              ) : (
+                <Text style={styles.outputText}>{outputText}</Text>
+              )}
+            </View>
+          ) : null}
 
         </ScrollView>
       </KeyboardAvoidingView>
@@ -172,143 +193,199 @@ export default function AppSettings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A', // Slate 900
+    backgroundColor: '#1C1C1E', // Very dark background
   },
   keyboardAvoid: {
     flex: 1,
   },
   scrollContent: {
-    padding: 24,
+    padding: 20,
     paddingBottom: 40,
   },
-  header: {
-    marginTop: 20,
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#F8FAFC',
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#94A3B8',
-    marginTop: 8,
-  },
-  card: {
-    backgroundColor: '#1E293B', // Slate 800
-    borderRadius: 24,
-    padding: 24,
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#334155',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
   },
-  cardTitle: {
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  logoIcon: {
+    fontSize: 20,
+    color: '#FFF',
+  },
+  logoText: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#F1F5F9',
-    marginBottom: 16,
+    color: '#FFF',
+    letterSpacing: -0.5,
   },
-  description: {
-    fontSize: 14,
-    color: '#94A3B8',
-    marginBottom: 16,
-    lineHeight: 20,
+  topRightIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#CBD5E1',
-    marginBottom: 8,
+  avatarPlaceholder: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FF8A65', // Sample avatar color
   },
-  input: {
-    backgroundColor: '#0F172A',
-    borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 12,
-    color: '#F8FAFC',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    marginBottom: 16,
-  },
-  textArea: {
-    height: 120,
-    paddingTop: 16,
-  },
-  button: {
-    borderRadius: 12,
-    paddingVertical: 14,
+  bellIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#2C2C2E',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  primaryButton: {
-    backgroundColor: '#0284C7', // Sky 600
-    shadowColor: '#0284C7',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  buttonText: {
-    color: '#FFFFFF',
+  bellText: {
     fontSize: 16,
+  },
+  mainTitle: {
+    fontSize: 48,
+    fontWeight: '800',
+    color: '#FFF',
+    lineHeight: 52,
+    letterSpacing: -1,
+    marginBottom: 32,
+  },
+  bentoBox: {
+    borderRadius: 32,
+    padding: 24,
+    marginBottom: 16,
+  },
+  bentoHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  bentoCategory: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+    opacity: 0.6,
+  },
+  bentoTime: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+    opacity: 0.6,
+  },
+  bentoTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#000',
+    letterSpacing: -0.5,
+    marginBottom: 16,
+  },
+  apiInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  apiInput: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+  },
+  bentoFooterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  bentoFooterText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#000',
+    opacity: 0.6,
+  },
+  saveButton: {
+    backgroundColor: '#000',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  saveButtonText: {
+    color: '#FFF',
     fontWeight: '700',
+    fontSize: 14,
+  },
+  playgroundHeader: {
+    marginTop: 16,
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },
+  playgroundTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFF',
+    marginBottom: 4,
+  },
+  playgroundSubtitle: {
+    fontSize: 14,
+    color: '#8E8E93',
+  },
+  textArea: {
+    height: 100,
+    fontSize: 18,
+    color: '#FFF',
+    fontWeight: '500',
   },
   featuresGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginTop: 8,
+    justifyContent: 'space-between',
   },
-  featureButton: {
-    backgroundColor: '#334155',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: '#475569',
+  featureBentoBox: {
+    width: '48%',
+    borderRadius: 28,
+    padding: 20,
+    marginBottom: 16,
+    aspectRatio: 1,
+    justifyContent: 'space-between',
   },
-  featureButtonActive: {
-    backgroundColor: '#0284C7',
-    borderColor: '#38BDF8',
+  featureBoxLeft: {
+    marginRight: '2%',
   },
-  featureText: {
-    color: '#CBD5E1',
+  featureBoxRight: {
+    marginLeft: '2%',
+  },
+  featureActive: {
+    opacity: 0.7,
+  },
+  featureIcon: {
+    fontSize: 32,
+  },
+  featureBoxTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#000',
+    letterSpacing: -0.5,
+  },
+  featureBoxSubtitle: {
     fontSize: 14,
     fontWeight: '600',
-  },
-  featureTextActive: {
-    color: '#FFFFFF',
-  },
-  outputContainer: {
-    marginTop: 24,
-    padding: 16,
-    backgroundColor: '#0F172A',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#38BDF8', // Glow effect
-  },
-  outputLabel: {
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    color: '#38BDF8',
-    fontWeight: '700',
-    marginBottom: 8,
+    color: '#000',
+    opacity: 0.6,
+    marginTop: 4,
   },
   outputText: {
-    fontSize: 16,
-    color: '#F8FAFC',
-    lineHeight: 24,
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#FFF',
+    lineHeight: 28,
+    marginTop: 8,
   },
   loader: {
-    marginVertical: 20,
+    marginVertical: 24,
   }
 });
