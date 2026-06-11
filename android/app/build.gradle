@@ -153,6 +153,9 @@ android {
 }
 
 dependencies {
+    // OkHttp for direct API calls to Groq
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
