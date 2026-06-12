@@ -11,6 +11,7 @@ import {
   Platform,
   Alert,
   Image,
+  NativeModules,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { saveApiKey, getApiKey, runAIFeature, AIFeature } from '../utils/groq';
@@ -51,6 +52,9 @@ export default function AppSettings() {
     setIsSaving(true);
     try {
       await saveApiKey(apiKey.trim());
+      if (NativeModules.SharedPrefsModule) {
+        NativeModules.SharedPrefsModule.saveApiKey(apiKey.trim());
+      }
       Alert.alert('Success', 'Groq API Key saved securely!');
     } catch (e: any) {
       Alert.alert('Error', e.message);

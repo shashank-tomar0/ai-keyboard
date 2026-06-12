@@ -1,5 +1,6 @@
 package com.shashank.aikeyboard
 
+import android.content.Context
 import android.inputmethodservice.InputMethodService
 import android.os.Handler
 import android.os.Looper
@@ -86,8 +87,11 @@ class AIKeyboardService : InputMethodService() {
     }
 
     private fun callGroqApi(prompt: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
-        if (API_KEY.contains("replace_me")) {
-            onError("Please set your Groq API Key in AIKeyboardService.kt")
+        val sharedPref = getSharedPreferences("AIKeyboardPrefs", Context.MODE_PRIVATE)
+        val apiKey = sharedPref.getString("GROQ_API_KEY", null)
+
+        if (apiKey.isNullOrEmpty() || apiKey.contains("replace_me")) {
+            onError("Please set your Groq API Key in the AI Keyboard App settings!")
             return
         }
 
@@ -107,7 +111,7 @@ class AIKeyboardService : InputMethodService() {
         val request = Request.Builder()
             .url("https://api.groq.com/openai/v1/chat/completions")
             .post(body)
-            .addHeader("Authorization", "Bearer \$API_KEY")
+            .addHeader("Authorization", "Bearer \$apiKey")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
